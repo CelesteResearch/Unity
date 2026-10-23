@@ -1,0 +1,68 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>netstandard2.1</TargetFramework>
+        <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+        <LangVersion>latest</LangVersion>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <DefineConstants>UNITY_EDITOR</DefineConstants>
+        <UnityEditorDirectory
+            Condition="'$(UnityEditorDirectory)' == ''"
+        >$(UNITY_EDITOR_DIRECTORY)</UnityEditorDirectory>
+        <UnityInputSystemAssembly
+            Condition="'$(UnityInputSystemAssembly)' == ''"
+        >$(MSBuildThisFileDirectory)../../Library/ScriptAssemblies/Unity.InputSystem.dll</UnityInputSystemAssembly>
+    </PropertyGroup>
+    <ItemGroup>
+        <UnityHostReference Include="$(UnityEditorDirectory)/Data/Managed/UnityEngine/UnityEngine*.dll" />
+        <UnityHostReference Include="$(UnityEditorDirectory)/Data/Managed/UnityEngine/UnityEditor*.dll" />
+        <Reference Include="@(UnityHostReference)">
+            <Private>false</Private>
+        </Reference>
+        <Reference Include="Unity.InputSystem">
+            <HintPath>$(UnityInputSystemAssembly)</HintPath>
+            <Private>false</Private>
+        </Reference>
+    </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="../../../Shared/src/Celeste.Audio.Fmod/Celeste.Audio.Fmod.csproj" />
+        <ProjectReference Include="../../../Shared/src/Celeste.Localization/Celeste.Localization.csproj" />
+        <ProjectReference Include="../../../Shared/src/Celeste.Input.Gameplay/Celeste.Input.Gameplay.csproj" />
+        <ProjectReference Include="../../../Shared/src/Celeste.Simulation/Celeste.Simulation.csproj" />
+        <ProjectReference Include="../../../Shared/src/Celeste.Physics/Celeste.Physics.csproj" />
+        <ProjectReference Include="../../../Shared/src/Celeste.Formats.Settings/Celeste.Formats.Settings.csproj" />
+        <ProjectReference Include="../../../Shared/src/Celeste.Formats.Save/Celeste.Formats.Save.csproj" />
+        <ProjectReference Include="../../../Shared/src/Celeste.Formats.Map/Celeste.Formats.Map.csproj" />
+        <ProjectReference Include="../../../Shared/src/Celeste.Formats.Replay/Celeste.Formats.Replay.csproj" />
+        <ProjectReference Include="../../../Shared/src/Celeste.Game/Celeste.Game.csproj" />
+        <ProjectReference
+            Include="../../../Shared/src/Celeste.Audio.Fmod.Gameplay/Celeste.Audio.Fmod.Gameplay.csproj"
+        />
+        <ProjectReference Include="../../../Shared/src/Celeste.Everest/Celeste.Everest.csproj" />
+        <ProjectReference Include="../../../Shared/src/Celeste.Everest.Detours/Celeste.Everest.Detours.csproj" />
+        <ProjectReference Include="../../../Shared/src/Celeste.Game.Runtime/Celeste.Game.Runtime.csproj" />
+        <ProjectReference Include="../../../Shared/src/Celeste.Savestates/Celeste.Savestates.csproj" />
+        <ProjectReference Include="../../../Shared/src/Celeste.Formats.Content/Celeste.Formats.Content.csproj" />
+        <ProjectReference Include="../../../Shared/src/Celeste.Hosting.Runtime/Celeste.Hosting.Runtime.csproj" />
+        <ProjectReference
+            Include="../../../Shared/src/Celeste.Graphics.Direct3D11/Celeste.Graphics.Direct3D11.csproj"
+        />
+        <ProjectReference Include="../../../Shared/src/Celeste.Graphics.Vulkan/Celeste.Graphics.Vulkan.csproj" />
+        <ProjectReference
+            Include="../../../Shared/src/Celeste.Graphics.Direct3D12/Celeste.Graphics.Direct3D12.csproj"
+        />
+        <ProjectReference Include="../../../Shared/src/Celeste.Graphics.Effects/Celeste.Graphics.Effects.csproj" />
+        <ProjectReference Include="../../../Shared/src/Celeste.Platform.Native/Celeste.Platform.Native.csproj" />
+        <ProjectReference Include="../../../Shared/src/Celeste.Recorder/Celeste.Recorder.csproj" />
+        <Compile Include="../../Assets/Runtime/**/*.cs" />
+    </ItemGroup>
+    <Target Name="ValidateUnityHostReferences" BeforeTargets="ResolveAssemblyReferences">
+        <Error
+            Condition="!Exists('$(UnityEditorDirectory)/Data/Managed/UnityEngine/UnityEngine.CoreModule.dll')"
+            Text="Set UnityEditorDirectory to the installed Editor directory containing Data/Managed."
+        />
+        <Error
+            Condition="!Exists('$(UnityInputSystemAssembly)')"
+            Text="Import this Unity project to compile its Input System package, or set UnityInputSystemAssembly to that compiled package assembly."
+        />
+    </Target>
+</Project>

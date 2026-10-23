@@ -1,0 +1,45 @@
+# Unity generated files and local configuration
+/Library/
+/Temp/
+/Obj/
+**/bin/
+**/obj/
+/Logs/
+/UserSettings/
+/Builds/
+/TestResults/
+/.vs/
+/.idea/
+/*.csproj
+/*.sln
+/*.slnx
+*.user
+*.pidb
+*.log
+*.binlog
+
+# User-supplied content and commercial dependencies
+/Content/
+/Assets/Plugins/Sirenix/
+/Assets/Plugins/Sirenix.meta
+/Assets/Plugins/FMOD/
+/Assets/Plugins/FMOD.meta
+/Assets/Plugins/Roslyn/
+/Assets/Plugins/Roslyn.meta
+/Audio/FMOD/
+/Artifacts/
+/Saves/
+/Backups/
+/Assets/WebGLTemplates/Celeste/touch/*.png
+/Assets/WebGLTemplates/Celeste/touch/*.png.meta
+/Assets/Resources/Celeste/UI/SteamLogo.bytes
+/Assets/Resources/Celeste/UI/SteamLogo.bytes.meta
+
+# Locally built managed/native plugins
+/Assets/Runtime/Plugins/
+/Assets/Runtime/Plugins.meta
+/Packages/local.celeste.shared/Runtime/
+/Packages/local.celeste.shared/Runtime.meta
+/Packages/local.celeste.shared/PortableBuiltAssemblyClosure.json
+/Packages/local.celeste.shared/PortableBuiltAssemblyClosure.json.meta
+/Tools/Effects/OriginalCatalog.json

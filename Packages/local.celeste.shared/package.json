@@ -1,0 +1,7 @@
+{
+  "name": "local.celeste.shared",
+  "version": "0.1.0",
+  "displayName": "Celeste Shared Runtime",
+  "description": "Compiled portable shared runtime and its managed dependency closure.",
+  "unity": "6000.0"
+}

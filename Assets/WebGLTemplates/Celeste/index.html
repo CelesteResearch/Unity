@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+        <meta name="celeste-web-template" content="1" />
+        <title>Celeste</title>
+        <link rel="icon" type="image/png" href="touch/favicon.png?v=1" />
+        <style>
+            html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: #000; }
+            #celeste-viewport { position: fixed; inset: 0; width: 100%; height: 100%; background: #000; }
+            #celeste-viewport:fullscreen { width: 100%; height: 100%; }
+            #unity-canvas { display: block; width: 100%; height: 100%; outline: none; background: #000; }
+            #celeste-startup { position: absolute; inset: 0; padding: 24px; box-sizing: border-box; overflow: hidden; color: #ccd1d8; background: #090a0c; font: 16px/1.6 "Cascadia Code", Consolas, "SFMono-Regular", monospace; pointer-events: none; transition: opacity .24s ease, visibility 0s linear .24s; }
+            #celeste-startup.is-ready { opacity: 0; visibility: hidden; }
+            #celeste-startup.is-exited { opacity: 1; visibility: visible; transition: none; }
+            #unity-canvas[hidden] { display: none; }
+            .terminal-command { margin: 0 0 12px; color: #f0f1f3; }
+            .terminal-banner { margin: 0 0 8px; color: #aeb8c6; }
+            .terminal-banner a { color: inherit; pointer-events: auto; }
+            #celeste-status { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; }
+            .boot-log { list-style: none; padding: 0; margin: 0; }
+            .boot-log-row { display: flex; align-items: baseline; gap: 12px; min-height: 26px; }
+            .log-marker { width: 64px; flex: 0 0 64px; color: #969ea9; }
+            .boot-log-row.is-current { color: #edf0f3; }
+            .boot-log-row.is-error, .boot-log-row.is-error .log-marker, .boot-footer { color: #ffb1b1; }
+            .resource-line, .boot-footer { margin: 0; overflow-wrap: anywhere; }
+            .boot-log-row[hidden], .resource-line[hidden], .boot-footer[hidden], #celeste-status[hidden] { display: none; }
+            @media (max-width: 600px) { #celeste-startup { font-size: 15px; } }
+            @media (max-height: 480px) { #celeste-startup { font-size: 15px; line-height: 1.3; } .boot-log-row { min-height: 20px; } .terminal-command { margin-bottom: 8px; } }
+            @media (prefers-reduced-motion: reduce) { #celeste-startup { transition: none; } }
+        </style>
+    </head>
+    <body>
+        <main id="celeste-viewport">
+            <canvas id="unity-canvas" width="{{{ WIDTH }}}" height="{{{ HEIGHT }}}" tabindex="0"></canvas>
+            <section id="celeste-startup" aria-label="Game startup">
+                <p class="terminal-banner">Celeste remake — a reconstructed implementation, developed by OLC.</p>
+                <p class="terminal-banner">
+                    Project:
+                    <a href="https://github.com/CelesteResearch" target="_blank" rel="noopener noreferrer"
+                        >https://github.com/CelesteResearch</a
+                    >
+                </p>
+                <p class="terminal-command">$ celeste</p>
+                <p id="celeste-status" role="status" aria-live="polite">Initializing</p>
+                <ol class="boot-log" aria-label="Startup stages">
+                    <li class="boot-log-row" hidden>
+                        <span class="log-marker">&#160;</span><span class="log-message">&#160;</span>
+                    </li>
+                    <li class="boot-log-row" hidden>
+                        <span class="log-marker">&#160;</span><span class="log-message">&#160;</span>
+                    </li>
+                    <li class="boot-log-row" hidden>
+                        <span class="log-marker">&#160;</span><span class="log-message">&#160;</span>
+                    </li>
+                    <li class="boot-log-row" hidden>
+                        <span class="log-marker">&#160;</span><span class="log-message">&#160;</span>
+                    </li>
+                    <li class="boot-log-row" hidden>
+                        <span class="log-marker">&#160;</span><span class="log-message">&#160;</span>
+                    </li>
+                    <li class="boot-log-row" hidden>
+                        <span class="log-marker">&#160;</span><span class="log-message">&#160;</span>
+                    </li>
+                    <li class="boot-log-row" hidden>
+                        <span class="log-marker">&#160;</span><span class="log-message">&#160;</span>
+                    </li>
+                    <li class="boot-log-row" hidden>
+                        <span class="log-marker">&#160;</span><span class="log-message">&#160;</span>
+                    </li>
+                    <li class="boot-log-row" hidden>
+                        <span class="log-marker">&#160;</span><span class="log-message">&#160;</span>
+                    </li>
+                    <li class="boot-log-row" hidden>
+                        <span class="log-marker">&#160;</span><span class="log-message">&#160;</span>
+                    </li>
+                </ol>
+                <p id="content-line" class="resource-line" hidden>Assets: <span id="content-values">&#160;</span></p>
+                <p id="audio-line" class="resource-line" hidden>Audio: <span id="audio-values">&#160;</span></p>
+                <p id="boot-footer" class="boot-footer" hidden>Preparing the resources needed to start.</p>
+            </section>
+        </main>
+        <script id="celeste-web-bootstrap">
+            const canvas = document.getElementById("unity-canvas");
+            const status = document.getElementById("celeste-status");
+            const startup = document.getElementById("celeste-startup");
+            const footer = document.getElementById("boot-footer");
+            const logRows = Array.from(document.querySelectorAll(".boot-log-row"), row => ({
+                row, marker: row.querySelector(".log-marker").firstChild,
+                message: row.querySelector(".log-message").firstChild
+            }));
+            const logMessages = new Array(logRows.length).fill("\u00a0");
+            const resourceRows = {
+                content: { line: document.getElementById("content-line"), text: document.getElementById("content-values").firstChild },
+                audio: { line: document.getElementById("audio-line"), text: document.getElementById("audio-values").firstChild }
+            };
+            const stages = {
+                "restore-saves": "Restore saves", "read-manifest": "Read asset list", "prepare-framework": "Initialize",
+                "initialize-devices": "Prepare audio and video", "prepare-boot": "Load base assets",
+                "construct-game": "Prepare game", "load-game": "Load game resources", ready: "Ready"
+            };
+            let logCount = 0;
+            let ready = false;
+            let hostStagesStarted = false;
+            let failed = false;
+            function setText(node, value) { if (node.data !== value) node.data = value; }
+            function appendStage(message, error = false) {
+                if (logCount > 0 && logMessages[logCount - 1] === message) return;
+                if (error) {
+                    if (logCount === 0) logCount = 1;
+                } else if (logCount === logRows.length) {
+                    for (let i = 0; i < logRows.length - 1; i++) logMessages[i] = logMessages[i + 1];
+                } else logCount++;
+                logMessages[logCount - 1] = message;
+                for (let i = 0; i < logRows.length; i++) {
+                    const current = i === logCount - 1;
+                    logRows[i].row.hidden = i >= logCount;
+                    setText(logRows[i].marker, i >= logCount ? "\u00a0" : current ? error ? "[fail]" : "[...]" : "[done]");
+                    setText(logRows[i].message, logMessages[i]);
+                    logRows[i].row.classList.toggle("is-current", current && !error);
+                    logRows[i].row.classList.toggle("is-error", current && error);
+                }
+            }
+            function bytes(value) { return (value / (1024 * 1024)).toFixed(1) + " MB"; }
+            function duration(seconds) {
+                const value = Math.min(359999, Math.ceil(seconds));
+                const minutes = Math.floor(value / 60);
+                return (value >= 3600 ? Math.floor(value / 3600) + ":" + String(minutes % 60).padStart(2, "0") : minutes) +
+                    ":" + String(value % 60).padStart(2, "0");
+            }
+            function readEstimate(row, progress) {
+                const now = performance.now();
+                const previous = row.samples?.[row.samples.length - 1];
+                if (!previous || previous.total !== progress.totalBytes || previous.received > progress.receivedBytes) {
+                    row.samples = [];
+                    row.lastReadAt = now;
+                }
+                if (!previous || progress.receivedBytes > previous.received) row.lastReadAt = now;
+                row.samples.push({ time: now, total: progress.totalBytes, received: progress.receivedBytes });
+                while (row.samples.length > 1 && now - row.samples[0].time > 8000) row.samples.shift();
+                const first = row.samples[0];
+                const elapsed = (now - first.time) / 1000;
+                const rate = elapsed >= 1 && now - row.lastReadAt < 4000
+                    ? Math.max(0, progress.receivedBytes - first.received) / elapsed : 0;
+                const speed = rate > 0 ? " · Read rate ~" + bytes(rate) + "/s" : " · Waiting for data";
+                const eta = progress.totalBytes > 0 && progress.receivedBytes >= progress.totalBytes
+                    ? " · Processing resources"
+                    : progress.totalBytes > progress.receivedBytes && rate > 0 && elapsed >= 2
+                        ? " · Read ETA ~" + duration((progress.totalBytes - progress.receivedBytes) / rate)
+                        : " · Estimating read time";
+                return speed + eta;
+            }
+            window.addEventListener("celeste-startup-stage", event => {
+                if (failed || ready) return;
+                const id = event.detail?.stage;
+                if (!Object.prototype.hasOwnProperty.call(stages, id)) return;
+                hostStagesStarted = true;
+                setText(status.firstChild, stages[id]);
+                appendStage(stages[id]);
+            });
+            window.addEventListener("celeste-content-progress", event => {
+                if (failed || ready) return;
+                const progress = event.detail;
+                const row = progress?.category === "content" ? resourceRows.content : progress?.category === "audio" ? resourceRows.audio : null;
+                if (!row || !Number.isFinite(progress.totalBytes) || !Number.isFinite(progress.receivedBytes) ||
+                        !Number.isFinite(progress.readyBytes) || !Number.isFinite(progress.cachedBytes)) return;
+                if (row.line.hidden) row.line.hidden = false;
+                const percent = progress.totalBytes > 0 ? Math.min(100, Math.max(0, Math.floor(progress.readyBytes * 100 / progress.totalBytes))) : 0;
+                setText(row.text, percent + "% · Read " + bytes(progress.receivedBytes) + " / " + bytes(progress.totalBytes) +
+                    " · Ready " + bytes(progress.readyBytes) + (progress.cachedBytes > 0 ? " · Local cache " + bytes(progress.cachedBytes) : "") +
+                    readEstimate(row, progress));
+            });
+            const config = {
+                arguments: [],
+#if PROGRESSIVE_ASSET_LOADING
+                primaryDataUrls: {{{ JSON.stringify(PRIMARY_DATA_FILES) }}},
+                secondaryDataUrls: {{{ JSON.stringify(SECONDARY_DATA_FILES) }}},
+#else
+                dataUrl: "Build/{{{ DATA_FILENAME }}}",
+#endif
+                frameworkUrl: "Build/{{{ FRAMEWORK_FILENAME }}}",
+#if USE_WASM
+                codeUrl: "Build/{{{ CODE_FILENAME }}}",
+#endif
+#if SYMBOLS_FILENAME
+                symbolsUrl: "Build/{{{ SYMBOLS_FILENAME }}}",
+#endif
+                streamingAssetsUrl: "StreamingAssets",
+                fullscreenElementID: "celeste-viewport",
+                matchWebGLToCanvasSize: true,
+                autoSyncPersistentDataPath: false,
+                companyName: {{{ JSON.stringify(COMPANY_NAME) }}},
+                productName: {{{ JSON.stringify(PRODUCT_NAME) }}},
+                productVersion: {{{ JSON.stringify(PRODUCT_VERSION) }}},
+                showBanner: (message, type) => {
+                    if (type === "error") showFailure(message);
+                    else console.warn(message);
+                }
+            };
+            function showFailure(message, gameStopped = false) {
+                failed = true;
+                console.error(message);
+                if (ready && !gameStopped) return;
+                const title = ready ? "Game stopped" : "Loading failed";
+                setText(status.firstChild, title);
+                status.hidden = false;
+                startup.classList.remove("is-ready");
+                startup.classList.add("is-failed");
+                appendStage(title, true);
+                footer.hidden = false;
+                setText(footer.firstChild, ready ? "The game stopped after an error. Reload the page to try again." :
+                    "Startup did not finish. Reload the page to try again.");
+            }
+            window.addEventListener("error", event => {
+                if (event.error != null) showFailure(event.error);
+            });
+            window.addEventListener("unhandledrejection", event => showFailure(event.reason));
+            window.addEventListener("celeste-game-ready", () => {
+                if (failed) return;
+                ready = true;
+                if (logCount > 0) setText(logRows[logCount - 1].marker, "[done]");
+                status.hidden = true;
+                startup.classList.add("is-ready");
+            }, { once: true });
+            window.addEventListener("celeste-game-failed", () =>
+                showFailure(ready ? "Celeste game stopped after an error." : "Celeste game initialization failed.", true));
+            window.addEventListener("celeste-game-exited", () => {
+                ready = true;
+                canvas.hidden = true;
+                startup.setAttribute("data-game-closed", "true");
+                startup.setAttribute("aria-label", "Game exited");
+                startup.classList.remove("is-ready", "is-failed");
+                startup.classList.add("is-exited");
+                setText(status.firstChild, "Game exited");
+                status.hidden = false;
+                logCount = 0;
+                appendStage("Game exited.");
+                setText(logRows[0].marker, "[done]");
+                logRows[0].row.classList.remove("is-current");
+                resourceRows.content.line.hidden = true;
+                resourceRows.audio.line.hidden = true;
+                footer.hidden = false;
+                setText(footer.firstChild, "You can close this tab.");
+                // Release Unity after the current WebAssembly-to-JavaScript call has returned.
+                Promise.resolve().then(() => {
+                    const instance = window.celesteUnityInstance;
+                    if (!instance) throw new Error("The Unity game instance is unavailable for shutdown.");
+                    return instance.Quit();
+                }).then(() => {
+                    window.celesteUnityInstance = null;
+                }).catch(error => {
+                    setText(footer.firstChild, "Game stopped, but engine shutdown failed. You can close this tab.");
+                    showFailure(error);
+                });
+            }, { once: true });
+            const loader = document.createElement("script");
+            loader.src = "Build/{{{ LOADER_FILENAME }}}";
+            loader.onload = () => {
+                if (!failed && !ready) appendStage("Load program");
+                createUnityInstance(canvas, config, fraction => {
+                    if (!failed && !ready && !hostStagesStarted)
+                    {
+                        setText(status.firstChild, "Load program " + Math.floor(fraction * 100) + "%");
+                        if (logCount > 0) setText(logRows[logCount - 1].message, "Load program " + Math.floor(fraction * 100) + "%");
+                    }
+                }).then(instance => {
+                    window.celesteUnityInstance = instance;
+                    if (!failed && !ready && !hostStagesStarted) setText(status.firstChild, "Prepare game resources");
+                }).catch(showFailure);
+            };
+            loader.onerror = () => showFailure("Unity loader could not be loaded.");
+            appendStage("Load program");
+            document.body.appendChild(loader);
+        </script>
+    </body>
+</html>

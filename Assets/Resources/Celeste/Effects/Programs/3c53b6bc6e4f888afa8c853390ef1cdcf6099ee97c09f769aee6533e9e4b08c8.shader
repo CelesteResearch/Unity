@@ -1,0 +1,222 @@
+Shader "Celeste/Effects/3c53b6bc6e4f888afa8c853390ef1cdcf6099ee97c09f769aee6533e9e4b08c8"
+{
+    Properties
+    {
+        _SrcBlend ("_SrcBlend", Integer) = 1
+        _DstBlend ("_DstBlend", Integer) = 0
+        _SrcBlendAlpha ("_SrcBlendAlpha", Integer) = 1
+        _DstBlendAlpha ("_DstBlendAlpha", Integer) = 0
+        _BlendOp ("_BlendOp", Integer) = 0
+        _BlendOpAlpha ("_BlendOpAlpha", Integer) = 0
+        _Cull ("_Cull", Integer) = 0
+        _ZWrite ("_ZWrite", Integer) = 0
+        _ZTest ("_ZTest", Integer) = 8
+        _ColorMask ("_ColorMask", Integer) = 15
+        _StencilRef ("_StencilRef", Integer) = 0
+        _StencilReadMask ("_StencilReadMask", Integer) = 255
+        _StencilWriteMask ("_StencilWriteMask", Integer) = 0
+        _StencilCompFront ("_StencilCompFront", Integer) = 8
+        _StencilCompBack ("_StencilCompBack", Integer) = 8
+        _StencilPassFront ("_StencilPassFront", Integer) = 0
+        _StencilPassBack ("_StencilPassBack", Integer) = 0
+        _StencilFailFront ("_StencilFailFront", Integer) = 0
+        _StencilFailBack ("_StencilFailBack", Integer) = 0
+        _StencilZFailFront ("_StencilZFailFront", Integer) = 0
+        _StencilZFailBack ("_StencilZFailBack", Integer) = 0
+        _DepthBias ("Depth bias", Float) = 0
+        _SlopeScaleBias ("Slope scale bias", Float) = 0
+        _CelestePSTex0 ("_CelestePSTex0", 2D) = "white" {}
+    }
+    SubShader
+    {
+        Pass
+        {
+            Blend [_SrcBlend] [_DstBlend], [_SrcBlendAlpha] [_DstBlendAlpha]
+            BlendOp [_BlendOp], [_BlendOpAlpha]
+            Cull [_Cull]
+            ZWrite [_ZWrite]
+            ZTest [_ZTest]
+            ColorMask [_ColorMask]
+            Offset [_SlopeScaleBias], [_DepthBias]
+            Stencil
+            {
+                Ref [_StencilRef]
+                ReadMask [_StencilReadMask]
+                WriteMask [_StencilWriteMask]
+                CompFront [_StencilCompFront]
+                CompBack [_StencilCompBack]
+                PassFront [_StencilPassFront]
+                PassBack [_StencilPassBack]
+                FailFront [_StencilFailFront]
+                FailBack [_StencilFailBack]
+                ZFailFront [_StencilZFailFront]
+                ZFailBack [_StencilZFailBack]
+            }
+            HLSLPROGRAM
+            #pragma target 3.5
+            #pragma vertex CelesteVS
+            #pragma fragment CelestePS
+            #include "HLSLSupport.cginc"
+            // Keep source SM4 target semantics; the include also defines legacy DX9 aliases.
+            #undef SV_Target0
+cbuffer CelesteVSUniforms
+{
+	float4 _CelesteVS[4];
+};
+
+struct CelesteVSInput
+{
+	float4 m_v0 : COLOR0;
+	float4 m_v1 : TEXCOORD0;
+	float4 m_v2 : POSITION0;
+};
+
+struct CelesteVSOutput
+{
+	float4 m_oD0 : COLOR0;
+	float4 m_oT0 : TEXCOORD0;
+	float4 m_oPos : SV_Position;
+};
+
+CelesteVSOutput CelesteSourceVS(CelesteVSInput input)
+{
+	CelesteVSOutput output = (CelesteVSOutput) 0;
+	#define c0 _CelesteVS[0]
+	#define c1 _CelesteVS[1]
+	#define c2 _CelesteVS[2]
+	#define c3 _CelesteVS[3]
+	#define v0 input.m_v0
+	#define v1 input.m_v1
+	#define v2 input.m_v2
+	#define oPos output.m_oPos
+	#define oD0 output.m_oD0
+	#define oT0 output.m_oT0
+	oPos.x = dot(v2, c0);
+	oPos.y = dot(v2, c1);
+	oPos.z = dot(v2, c2);
+	oPos.w = dot(v2, c3);
+	oD0 = v0;
+	oT0.xy = v1.xy;
+	#undef c0
+	#undef c1
+	#undef c2
+	#undef c3
+	#undef v0
+	#undef v1
+	#undef v2
+	#undef oPos
+	#undef oD0
+	#undef oT0
+	return output;
+}
+
+
+
+CelesteVSOutput CelesteVS(CelesteVSInput input)
+{
+    CelesteVSOutput output = CelesteSourceVS(input);
+#if defined(SHADER_API_GLCORE) || defined(SHADER_API_GLES3)
+    // Every source attachment, including the faux backbuffer, uses logical row zero at GL storage row zero.
+    output.m_oPos.y = -output.m_oPos.y;
+#endif
+#if defined(UNITY_REVERSED_Z)
+    output.m_oPos.z = output.m_oPos.w - output.m_oPos.z;
+#elif defined(SHADER_API_GLCORE) || defined(SHADER_API_GLES3)
+    output.m_oPos.z = 2.0 * output.m_oPos.z - output.m_oPos.w;
+#endif
+    return output;
+}
+
+cbuffer CelestePSUniforms
+{
+	float4 _CelestePS[1];
+};
+
+Texture2D _CelestePSTex0;
+SamplerState sampler_CelestePSTex0;
+
+struct CelestePSInput
+{
+	float4 m_oD0 : COLOR0;
+	float4 m_oT0 : TEXCOORD0;
+	float4 m_oPos : SV_Position;
+};
+
+struct CelestePSOutput
+{
+	float4 m_oC0 : SV_Target0;
+};
+
+CelestePSOutput CelestePS(CelestePSInput input)
+{
+	CelestePSOutput output = (CelestePSOutput) 0;
+	const float4 c1 = float4(4.0, -4.0, 0.25, -0.25);
+	const float4 c2 = float4(0.0, -1.0, -2.0, -3.0);
+	const float4 c3 = float4(1.0, 1.0, 1.0, 0.0);
+	const float4 c4 = float4(0.003906249, 0.0, 0.0, 0.0);
+	const float4 c5 = float4(0.062499999, 0.8125, 0.25, 1.0);
+	const float4 c6 = float4(0.562499999, 0.3125, 0.75, 0.5);
+	const float4 c7 = float4(0.187499998, 0.937500001, 0.125, 0.875000003);
+	const float4 c8 = float4(0.687499998, 0.437500001, 0.625, 0.375000003);
+	const float4 c9 = float4(-1.0, -1.0, -1.0, 1.0);
+	float4 r0;
+	float4 r1;
+	float4 r2;
+	float4 r3;
+	#define c0 _CelestePS[0]
+	#define v0 input.m_oD0
+	#define t0 input.m_oT0
+	#define oC0 output.m_oC0
+	r0 = _CelestePSTex0.Sample(sampler_CelestePSTex0, t0.xy);
+	r1.xy = t0.xy * c0.xy;
+	r1.zw = frac(r1.yx);
+	r1.xy = r1.xy + -r1.wz;
+	r1.z = ((r1.y >= 0.0) ? c1.z : c1.w);
+	r1.z = r1.y * r1.z;
+	r1.z = frac(r1.z);
+	r1.y = ((r1.y >= 0.0) ? c1.x : c1.y);
+	r1.y = r1.z * r1.y;
+	r1.z = frac(r1.y);
+	r1.y = r1.y + -r1.z;
+	r2 = r1.yyyy + c2;
+	r2 = r2 * r2;
+	r2.x = ((-r2.x >= 0.0) ? -c2.y : -c2.x);
+	r2.y = ((-r2.y >= 0.0) ? -c2.y : -c2.x);
+	r2.z = ((-r2.z >= 0.0) ? -c2.y : -c2.x);
+	r2.w = ((-r2.w >= 0.0) ? -c2.y : -c2.x);
+	r1.y = ((r1.x >= 0.0) ? c1.z : c1.w);
+	r1.y = r1.x * r1.y;
+	r1.x = ((r1.x >= 0.0) ? c1.x : c1.y);
+	r1.y = frac(r1.y);
+	r1.x = r1.x * r1.y;
+	r1.y = frac(r1.x);
+	r1.x = r1.x + -r1.y;
+	r1 = r1.xxxx + c2;
+	r1 = r1 * r1;
+	r1.x = ((-r1.x >= 0.0) ? -c2.y : -c2.x);
+	r1.y = ((-r1.y >= 0.0) ? -c2.y : -c2.x);
+	r1.z = ((-r1.z >= 0.0) ? -c2.y : -c2.x);
+	r1.w = ((-r1.w >= 0.0) ? -c2.y : -c2.x);
+	r3.x = dot(c5, r1);
+	r3.y = dot(c6, r1);
+	r3.z = dot(c7, r1);
+	r3.w = dot(c8, r1);
+	r1.x = dot(r3, r2);
+	r1.x = r1.x + -c6.w;
+	r1.x = r1.x * c4.x;
+	r2 = c9;
+	r0 = (r0 * r2) + c3;
+	r0 = (r0 * v0) + r1.xxxx;
+	oC0 = r0;
+	#undef c0
+	#undef v0
+	#undef t0
+	#undef oC0
+	return output;
+}
+
+
+            ENDHLSL
+        }
+    }
+}

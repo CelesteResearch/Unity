@@ -1,0 +1,135 @@
+{
+  "ExcludedPatterns": [
+    "Mods/*",
+    "Celeste.tas",
+    "Dialog/Fonts/JetBrainsMono-Regular.fnt",
+    "Dialog/Fonts/JetBrainsMono-Regular_0.png"
+  ],
+  "Groups": [
+    {
+      "Id": "boot",
+      "Requires": [],
+      "Patterns": [
+        "Graphics/Atlases/*.meta",
+        "Effects/*",
+        "Monocle/*",
+        "Graphics/SpritesGui.xml",
+        "Graphics/ColorGrading/*",
+        "Tutorials/*"
+      ],
+      "Atlases": ["Opening", "Gameplay", "Overworld"]
+    },
+    {
+      "Id": "menu",
+      "Requires": ["boot", "gameplay/common", "portraits/file-select", "languages", "maps/original"],
+      "Patterns": ["Overworld/*"],
+      "Atlases": ["Gui", "Mountain", "Overworld", "FileSelect", "Journal", "Checkpoints"]
+    },
+    {
+      "Id": "gameplay/common",
+      "Requires": ["boot"],
+      "Patterns": ["Graphics/*.xml", "Graphics/ColorGrading/*", "Tutorials/*"],
+      "Atlases": ["Gameplay", "Misc"]
+    },
+    {
+      "Id": "portraits/file-select",
+      "Requires": ["boot"],
+      "Patterns": [
+        "Graphics/Atlases/Portraits.meta",
+        "Graphics/Portraits.xml",
+        "Graphics/Atlases/Portraits/madeline/normal*.data"
+      ],
+      "Atlases": []
+    },
+    {
+      "Id": "portraits",
+      "Requires": ["boot"],
+      "Patterns": [],
+      "Atlases": ["Portraits"]
+    },
+    {
+      "Id": "languages",
+      "Requires": [],
+      "Patterns": ["Dialog/*", "Graphics/Fonts/*"],
+      "Atlases": []
+    },
+    {
+      "Id": "maps/original",
+      "Requires": [],
+      "Patterns": ["Maps/*.bin"],
+      "Atlases": []
+    },
+    {
+      "Id": "audio/original",
+      "Requires": [],
+      "Patterns": ["FMOD/Desktop/*"],
+      "Atlases": []
+    },
+    {
+      "Id": "chapters/prologue",
+      "Requires": ["gameplay/common"],
+      "Patterns": ["Maps/0-*.bin"],
+      "Atlases": []
+    },
+    {
+      "Id": "chapters/forsaken-city",
+      "Requires": ["gameplay/common"],
+      "Patterns": ["Maps/1-*.bin", "Maps/1H-*.bin", "Maps/1X-*.bin"],
+      "Atlases": ["ForsakenCity"]
+    },
+    {
+      "Id": "chapters/old-site",
+      "Requires": ["gameplay/common"],
+      "Patterns": ["Maps/2-*.bin", "Maps/2H-*.bin", "Maps/2X-*.bin"],
+      "Atlases": ["OldSite"]
+    },
+    {
+      "Id": "chapters/resort",
+      "Requires": ["gameplay/common"],
+      "Patterns": ["Maps/3-*.bin", "Maps/3H-*.bin", "Maps/3X-*.bin"],
+      "Atlases": ["CelestialResort", "Memo"]
+    },
+    {
+      "Id": "chapters/golden-ridge",
+      "Requires": ["gameplay/common"],
+      "Patterns": ["Maps/4-*.bin", "Maps/4H-*.bin", "Maps/4X-*.bin"],
+      "Atlases": ["Cliffside"]
+    },
+    {
+      "Id": "chapters/mirror-temple",
+      "Requires": ["gameplay/common"],
+      "Patterns": ["Maps/5-*.bin", "Maps/5H-*.bin", "Maps/5X-*.bin"],
+      "Atlases": ["MirrorTemple"]
+    },
+    {
+      "Id": "chapters/reflection",
+      "Requires": ["gameplay/common"],
+      "Patterns": ["Maps/6-*.bin", "Maps/6H-*.bin", "Maps/6X-*.bin"],
+      "Atlases": ["TheFall"]
+    },
+    {
+      "Id": "chapters/summit",
+      "Requires": ["gameplay/common"],
+      "Patterns": ["Maps/7-*.bin", "Maps/7H-*.bin", "Maps/7X-*.bin"],
+      "Atlases": ["SummitIntro", "SummitEnd"]
+    },
+    {
+      "Id": "chapters/epilogue",
+      "Requires": ["gameplay/common"],
+      "Patterns": ["Maps/8-*.bin"],
+      "Atlases": []
+    },
+    {
+      "Id": "chapters/core",
+      "Requires": ["gameplay/common"],
+      "Patterns": ["Maps/9-*.bin", "Maps/9H-*.bin", "Maps/9X-*.bin"],
+      "Atlases": ["Core"]
+    },
+    {
+      "Id": "chapters/farewell",
+      "Requires": ["gameplay/common"],
+      "Patterns": ["Maps/LostLevels.bin"],
+      "Atlases": ["Farewell", "WaveDashing", "Core"]
+    }
+  ]
+}

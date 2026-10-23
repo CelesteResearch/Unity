@@ -1,0 +1,15 @@
+{
+  "format": {
+    "tab_size": 4,
+    "line_width": 120,
+    "command_case": "unchanged",
+    "keyword_case": "unchanged",
+    "enable_sort": false,
+    "autosort": false
+  },
+  "markup": {
+    "enable_markup": false,
+    "first_comment_is_literal": true,
+    "literal_comment_pattern": ".*"
+  }
+}

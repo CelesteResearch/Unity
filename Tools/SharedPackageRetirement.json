@@ -1,0 +1,13 @@
+{
+  "Packages": [
+    "local.celeste.simulation",
+    "local.celeste.fmod",
+    "local.celeste.portable-host",
+    "local.celeste.everest",
+    "local.celeste.tas",
+    "local.celeste.savestates",
+    "local.celeste.recorder"
+  ],
+  "Replacement": "local.celeste.shared",
+  "Disposition": "Explicit integration retires these embedded package directories and manifest entries. The synchronization command refuses them and never deletes or moves them."
+}
